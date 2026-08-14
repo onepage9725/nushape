@@ -958,6 +958,16 @@
             }
 
             try {
+              const apiBase = String(document.body.getAttribute('data-api-base') || '').trim();
+              const isLocalPreview = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
+
+              if (isLocalPreview && !apiBase) {
+                throw new Error(
+                  '当前是本地静态预览（127.0.0.1/localhost），无法调用 /api。请使用 Vercel 域名访问，或在 body 加上 data-api-base="https://你的vercel域名"。'
+                );
+              }
+
+              const createBillEndpoint = (apiBase ? apiBase.replace(/\/$/, '') : '') + '/api/billplz/create-bill';
               const formData = new FormData(checkoutForm);
               const customer = {
                 email: String(formData.get('email') || '').trim(),
@@ -971,7 +981,7 @@
                 state: String(formData.get('state') || '').trim()
               };
 
-              const response = await fetch('/api/billplz/create-bill', {
+              const response = await fetch(createBillEndpoint, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json'

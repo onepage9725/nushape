@@ -940,7 +940,7 @@
         }
 
         if (checkoutForm) {
-          checkoutForm.addEventListener('submit', function (event) {
+          checkoutForm.addEventListener('submit', async function (event) {
             event.preventDefault();
             if (cart.length === 0) {
               alert('请先加入产品到购物车。');
@@ -950,11 +950,54 @@
               checkoutForm.reportValidity();
               return;
             }
-            alert('订单资料已提交，我们会尽快联系您。');
-            checkoutForm.reset();
-            cart.splice(0, cart.length);
-            renderCart();
-            closeCart();
+
+            const submitBtn = checkoutForm.querySelector('.checkout-submit');
+            if (submitBtn instanceof HTMLButtonElement) {
+              submitBtn.disabled = true;
+              submitBtn.textContent = '跳转付款中...';
+            }
+
+            try {
+              const formData = new FormData(checkoutForm);
+              const customer = {
+                email: String(formData.get('email') || '').trim(),
+                phone: String(formData.get('phone') || '').trim(),
+                firstName: String(formData.get('firstName') || '').trim(),
+                lastName: String(formData.get('lastName') || '').trim(),
+                address: String(formData.get('address') || '').trim(),
+                apartment: String(formData.get('apartment') || '').trim(),
+                postcode: String(formData.get('postcode') || '').trim(),
+                city: String(formData.get('city') || '').trim(),
+                state: String(formData.get('state') || '').trim()
+              };
+
+              const response = await fetch('/api/billplz/create-bill', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  customer: customer,
+                  cart: cart
+                })
+              });
+
+              const payload = await response.json().catch(function () {
+                return {};
+              });
+
+              if (!response.ok || !payload.url) {
+                throw new Error(payload.error || '无法创建付款链接，请稍后再试。');
+              }
+
+              window.location.href = payload.url;
+            } catch (error) {
+              alert(error instanceof Error ? error.message : '无法创建付款链接，请稍后再试。');
+              if (submitBtn instanceof HTMLButtonElement) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '付款';
+              }
+            }
           });
         }
 

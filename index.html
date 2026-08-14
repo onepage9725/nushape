@@ -24,7 +24,7 @@
           <a href="#" class="brand" aria-label="NuShape 首页">
             <img src="nushape-nb.png" alt="NuShape 标志" class="logo logo-nav" />
           </a>
-          <ul class="nav-links" aria-label="主导航">
+          <ul class="nav-links" id="mobile-nav-links" aria-label="主导航">
             <li><a href="#home">首页</a></li>
             <li><a href="#packages">优惠配套</a></li>
             <li><a href="#award">品牌大奖</a></li>
@@ -41,6 +41,17 @@
                 <path d="M3 4h2l2.3 10.2a1 1 0 0 0 1 .8h8.8a1 1 0 0 0 1-.8L20 8H7"></path>
               </svg>
               <span class="cart-count" data-cart-count>0</span>
+            </button>
+            <button
+              type="button"
+              class="nav-burger-btn"
+              aria-label="打开导航菜单"
+              aria-controls="mobile-nav-links"
+              aria-expanded="false"
+            >
+              <span></span>
+              <span></span>
+              <span></span>
             </button>
           </div>
         </nav>
@@ -392,22 +403,19 @@
                 <video muted autoplay loop playsinline preload="metadata" src="video/JY final.mov"></video>
               </article>
               <article class="video-tile">
-                <video muted autoplay loop playsinline preload="metadata" src="video/Kent final.mov"></video>
+                <video muted autoplay loop playsinline preload="metadata" src="video/XHSKent03.mov"></video>
               </article>
               <article class="video-tile">
-                <video muted autoplay loop playsinline preload="metadata" src="video/XHS Charmaine.mov"></video>
+                <video muted autoplay loop playsinline preload="metadata" src="video/XHSOliviabby.mov"></video>
               </article>
               <article class="video-tile">
-                <video muted autoplay loop playsinline preload="metadata" src="video/XHS 今天也要加油鸭 .mp4"></video>
+                <video muted autoplay loop playsinline preload="metadata" src="video/XHS_Linn_Final.mov"></video>
               </article>
               <article class="video-tile">
-                <video muted autoplay loop playsinline preload="metadata" src="video/XHS 张满满满月.mov"></video>
+                <video muted autoplay loop playsinline preload="metadata" src="video/Charice Final.mov"></video>
               </article>
               <article class="video-tile">
-                <video muted autoplay loop playsinline preload="metadata" src="video/XHS 温柔小千金.MOV.mp4"></video>
-              </article>
-              <article class="video-tile">
-                <video muted autoplay loop playsinline preload="metadata" src="video/XHS3E妈咪.mov"></video>
+                <video muted autoplay loop playsinline preload="metadata" src="video/JY final.mov"></video>
               </article>
               <article class="video-tile">
                 <video muted autoplay loop playsinline preload="metadata" src="video/XHSKent03.mov"></video>
@@ -416,25 +424,7 @@
                 <video muted autoplay loop playsinline preload="metadata" src="video/XHSOliviabby.mov"></video>
               </article>
               <article class="video-tile">
-                <video muted autoplay loop playsinline preload="metadata" src="video/XHSPiu亮miumiu.mp4"></video>
-              </article>
-              <article class="video-tile">
-                <video muted autoplay loop playsinline preload="metadata" src="video/XHSXUAN的笔记本 .mov"></video>
-              </article>
-              <article class="video-tile">
-                <video muted autoplay loop playsinline preload="metadata" src="video/XHS_JingWen_Final.mov"></video>
-              </article>
-              <article class="video-tile">
                 <video muted autoplay loop playsinline preload="metadata" src="video/XHS_Linn_Final.mov"></video>
-              </article>
-              <article class="video-tile">
-                <video muted autoplay loop playsinline preload="metadata" src="video/XHS可丽饼.mov"></video>
-              </article>
-              <article class="video-tile">
-                <video muted autoplay loop playsinline preload="metadata" src="video/XHS小虹爱吃麦当劳.mp4"></video>
-              </article>
-              <article class="video-tile">
-                <video muted autoplay loop playsinline preload="metadata" src="video/XHS小鸭很白 .mov"></video>
               </article>
               <article class="video-tile">
                 <video muted autoplay loop playsinline preload="metadata" src="video/XHS欧欧.mp4"></video>
@@ -713,7 +703,57 @@
         const cartOpenBtns = Array.from(document.querySelectorAll('.nav-cart-btn, .floating-cart-btn'));
         const cartCloseBtn = document.querySelector('.cart-close-btn');
         const checkoutForm = document.querySelector('[data-checkout-form]');
+        const navWrap = document.querySelector('.nav');
+        const navBurgerBtn = document.querySelector('.nav-burger-btn');
+        const navLinks = document.querySelector('.nav-links');
         const cart = [];
+
+        const closeMobileMenu = function () {
+          if (!navWrap || !navBurgerBtn) return;
+          navWrap.classList.remove('nav-mobile-open');
+          navBurgerBtn.setAttribute('aria-expanded', 'false');
+        };
+
+        const openMobileMenu = function () {
+          if (!navWrap || !navBurgerBtn) return;
+          navWrap.classList.add('nav-mobile-open');
+          navBurgerBtn.setAttribute('aria-expanded', 'true');
+        };
+
+        if (navBurgerBtn && navWrap) {
+          navBurgerBtn.addEventListener('click', function () {
+            if (navWrap.classList.contains('nav-mobile-open')) {
+              closeMobileMenu();
+              return;
+            }
+            openMobileMenu();
+          });
+        }
+
+        if (navLinks) {
+          navLinks.addEventListener('click', function (event) {
+            const target = event.target;
+            if (!(target instanceof HTMLElement)) return;
+            if (target.closest('a[href^="#"]')) {
+              closeMobileMenu();
+            }
+          });
+        }
+
+        document.addEventListener('click', function (event) {
+          if (!navWrap || !navBurgerBtn) return;
+          const target = event.target;
+          if (!(target instanceof Node)) return;
+          if (!navWrap.contains(target)) {
+            closeMobileMenu();
+          }
+        });
+
+        window.addEventListener('resize', function () {
+          if (window.innerWidth > 768) {
+            closeMobileMenu();
+          }
+        });
 
         if (carousel && prevBtn && nextBtn) {
           const scrollByAmount = () => {
@@ -766,6 +806,9 @@
         document.addEventListener('keydown', function (event) {
           if (event.key === 'Escape' && modal && !modal.hidden) {
             closeModal();
+          }
+          if (event.key === 'Escape') {
+            closeMobileMenu();
           }
         });
 
@@ -854,7 +897,6 @@
               cart.push({ name: name, price: price, qty: 1, image: image });
             }
             renderCart();
-            openCart();
           });
         });
 

@@ -45,6 +45,20 @@ function toFormBody(data) {
   return params;
 }
 
+function normalizeBillplzBaseUrl(rawBaseUrl) {
+  const fallback = 'https://www.billplz.com/api/v3';
+  const input = String(rawBaseUrl || '').trim();
+  if (!input) return fallback;
+
+  const noTrailingSlash = input.replace(/\/$/, '');
+  if (/\/api\/v3$/i.test(noTrailingSlash)) {
+    return noTrailingSlash;
+  }
+
+  // Allow users to set BILLPLZ_BASE_URL as https://www.billplz.com or sandbox host.
+  return noTrailingSlash + '/api/v3';
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
@@ -52,7 +66,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const baseUrl = process.env.BILLPLZ_BASE_URL || 'https://www.billplz.com/api/v3';
+    const baseUrl = normalizeBillplzBaseUrl(process.env.BILLPLZ_BASE_URL);
     const apiKey = process.env.BILLPLZ_API_KEY;
     const collectionId = process.env.BILLPLZ_COLLECTION_ID;
     const appBaseUrl = process.env.APP_BASE_URL;
@@ -106,13 +120,21 @@ export default async function handler(req, res) {
       body: toFormBody(billPayload)
     });
 
-    const result = await response.json().catch(function () {
-      return null;
-    });
+    const rawText = await response.text();
+    let result = null;
+    try {
+      result = rawText ? JSON.parse(rawText) : null;
+    } catch (parseError) {
+      result = null;
+    }
 
     if (!response.ok || !result || !result.url) {
       const reason = result && (result.error && result.error.message ? result.error.message : result.error);
-      throw makeError('Billplz create bill failed: ' + (reason || 'Unknown error'), 502);
+      const rawPreview = rawText ? rawText.slice(0, 300) : 'No response body';
+      const details = reason || rawPreview;
+      const suggestion =
+        'Check BILLPLZ_BASE_URL (live vs sandbox), BILLPLZ_API_KEY, BILLPLZ_COLLECTION_ID, and APP_BASE_URL.';
+      throw makeError('Billplz create bill failed (' + response.status + '): ' + details + '. ' + suggestion, 502);
     }
 
     return res.status(200).json({

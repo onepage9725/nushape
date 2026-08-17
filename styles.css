@@ -1,7 +1,7 @@
 :root {
-  --primary: #4795d0;
+  --primary: #02317e;
   --secondary: #f5bc49;
-  --deep-primary: #296f9f;
+  --deep-primary: #01255f;
   --soft-bg: #eef7ff;
   --white: #ffffff;
 }
@@ -1244,10 +1244,19 @@ footer[id] {
 }
 
 .review-shot {
+  margin: 0;
+  width: 210px;
+  height: 260px;
+  flex: 0 0 auto;
   border-radius: 16px;
-  min-height: 210px;
-  min-width: 210px;
   overflow: hidden;
+}
+
+.review-shot img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
 }
 
 .placeholder-shot {

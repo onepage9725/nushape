@@ -5,3 +5,5 @@ video/*
 !video/XHSOliviabby.mov
 !video/XHS_Linn_Final.mov
 !video/XHS欧欧.mp4
+.vercel
+.env*
